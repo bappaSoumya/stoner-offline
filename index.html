@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stoner Offline - Healthy Edition</title>
+    <style>
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #111;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; height: 100vh;
+            touch-action: none;
+        }
+        #game-container { 
+            position: relative; 
+            width: 100vw; max-width: 1000px;
+            aspect-ratio: 1000 / 600;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            background: #000;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        #ui {
+            position: absolute; top: 10px; width: 100%;
+            display: flex; justify-content: space-around; pointer-events: none;
+        }
+        .stats {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px; border-radius: 8px;
+            text-align: center; min-width: 80px; border: 2px solid #555;
+            font-size: 12px;
+        }
+        .active-ui { border-color: #ffeb3b; box-shadow: 0 0 15px #ffeb3b; transform: scale(1.05); }
+        .hp-bar-bg { width: 100%; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden; }
+        .hp-bar-fill { height: 100%; background: #ff4444; width: 100%; transition: width 0.3s; }
+        
+        #turn-msg {
+            position: absolute; top: 55px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.6); color: white; padding: 4px 12px;
+            border-radius: 20px; font-weight: bold; font-size: 12px;
+        }
+
+        #reset-btn {
+            margin-top: 15px; 
+            padding: 12px 35px; 
+            font-weight: bold; font-size: 16px;
+            background: #4CAF50;
+            color: white; border: none; border-radius: 50px; 
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        @media (min-width: 600px) {
+            .stats { min-width: 140px; font-size: 16px; }
+            #turn-msg { top: 90px; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <div id="ui">
+        <div class="stats" id="ui-p1"><strong>PLAYER 1</strong><div class="hp-bar-bg"><div id="hp1" class="hp-bar-fill"></div></div></div>
+        <div class="stats" id="ui-p2"><strong>PLAYER 2</strong><div class="hp-bar-bg"><div id="hp2" class="hp-bar-fill"></div></div></div>
+    </div>
+    <div id="turn-msg">READY?</div>
+</div>
+
+<button id="reset-btn">New Match</button>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const GRAVITY = 0.22;
+const GROUND_Y = 540;
+const POWER_MULT = 0.15;
+
+const isNight = Math.random() > 0.5;
+const skyColor = isNight ? '#1a237e' : '#87CEEB';
+const skyBottom = isNight ? '#000051' : '#E0F6FF';
+
+let gameActive = true;
+let currentPlayer = 1;
+let isDragging = false;
+let mousePos = { x: 0, y: 0 };
+let birds = [], trees = [];
+
+function initEnvironment() {
+    for(let i=0; i<6; i++) {
+        trees.push({ x: 50 + Math.random() * 900, size: 35 + Math.random() * 45, color: isNight ? '#1b5e20' : '#2e7d32' });
+    }
+    for(let i=0; i<3; i++) {
+        birds.push({ x: Math.random() * 1000, y: 50 + Math.random() * 150, s: 0.5 + Math.random(), wing: 0 });
+    }
+}
+
+function drawEnvironment() {
+    let grad = ctx.createLinearGradient(0,0,0, GROUND_Y);
+    grad.addColorStop(0, skyColor); grad.addColorStop(1, skyBottom);
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+
+    ctx.fillStyle = isNight ? '#f5f5f5' : '#fff59d';
+    ctx.beginPath(); ctx.arc(800, 80, 40, 0, Math.PI*2); ctx.fill();
+    if(isNight) { ctx.fillStyle = skyColor; ctx.beginPath(); ctx.arc(775, 75, 40, 0, Math.PI*2); ctx.fill(); }
+
+    trees.forEach(t => {
+        ctx.fillStyle = '#4e342e'; ctx.fillRect(t.x, GROUND_Y - t.size, 12, t.size);
+        ctx.fillStyle = t.color; ctx.beginPath(); ctx.arc(t.x+6, GROUND_Y - t.size, t.size/1.3, 0, Math.PI*2); ctx.fill();
+    });
+
+    ctx.strokeStyle = isNight ? '#444' : '#000'; ctx.lineWidth = 2;
+    birds.forEach(b => {
+        b.x += b.s; if(b.x > 1100) b.x = -100;
+        b.wing += 0.1; let w = Math.sin(b.wing) * 5;
+        ctx.beginPath(); ctx.moveTo(b.x - 10, b.y + w); ctx.quadraticCurveTo(b.x, b.y - 5, b.x + 10, b.y + w); ctx.stroke();
+    });
+
+    ctx.fillStyle = isNight ? '#1b5e20' : '#2e7d32';
+    ctx.fillRect(0, GROUND_Y, canvas.width, 60);
+}
+
+class Player {
+    constructor(x, y, color, id) {
+        this.x = x; this.y = y; this.color = color;
+        this.hp = 100; this.id = id; this.shake = 0;
+        this.slingshotX = id === 1 ? x + 45 : x - 45;
+        this.slingshotY = y - 5;
+    }
+
+    draw() {
+        ctx.save();
+        if (this.shake > 0) { ctx.translate(Math.random()*6-3, 0); this.shake--; }
+        
+        // Turn Indicator
+        if (currentPlayer === this.id && gameActive && !activeProjectile) {
+            let bounce = Math.sin(Date.now()/200) * 8;
+            ctx.fillStyle = "#ffeb3b"; ctx.beginPath();
+            ctx.moveTo(this.x - 12, this.y - 95 + bounce);
+            ctx.lineTo(this.x + 12, this.y - 95 + bounce);
+            ctx.lineTo(this.x, this.y - 75 + bounce); ctx.fill();
+        }
+
+        ctx.fillStyle = isNight ? '#eee' : '#222';
+        ctx.strokeStyle = isNight ? '#eee' : '#222';
+        ctx.lineCap = "round";
+
+        // Rounded Head
+        ctx.beginPath(); ctx.arc(this.x, this.y - 50, 14, 0, Math.PI * 2); ctx.fill();
+        
+        // Healthy Rounded Torso
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y - 15, 18, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Thicker Arms
+        ctx.lineWidth = 9;
+        ctx.beginPath(); 
+        ctx.moveTo(this.x - 25, this.y - 25); ctx.lineTo(this.x + 25, this.y - 25); 
+        ctx.stroke();
+
+        // Thicker Rounded Legs
+        ctx.beginPath(); 
+        ctx.moveTo(this.x - 8, this.y + 5); ctx.lineTo(this.x - 15, this.y + 35); 
+        ctx.stroke();
+        ctx.beginPath(); 
+        ctx.moveTo(this.x + 8, this.y + 5); ctx.lineTo(this.x + 15, this.y + 35); 
+        ctx.stroke();
+
+        // Slingshot
+        ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 7;
+        ctx.beginPath(); ctx.moveTo(this.slingshotX, GROUND_Y); ctx.lineTo(this.slingshotX, this.slingshotY); ctx.stroke();
+        ctx.restore();
+    }
+}
+
+class Projectile {
+    constructor(x, y, vx, vy) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.active = true; }
+    update() {
+        this.vy += GRAVITY; this.x += this.vx; this.y += this.vy;
+        if (this.y > GROUND_Y) this.explode();
+        [p1, p2].forEach(p => {
+            if (Math.hypot(this.x - p.x, this.y - (p.y-15)) < 35) { p.hp -= 20; p.shake = 20; this.explode(); }
+        });
+        if (this.x < 0 || this.x > canvas.width) this.explode();
+    }
+    explode() { this.active = false; setTimeout(nextTurn, 600); }
+    draw() { ctx.fillStyle = isNight ? 'yellow' : 'black'; ctx.beginPath(); ctx.arc(this.x, this.y, 8, 0, Math.PI*2); ctx.fill(); }
+}
+
+let p1 = new Player(160, GROUND_Y - 35, '#007bff', 1);
+let p2 = new Player(840, GROUND_Y - 35, '#dc3545', 2);
+let activeProjectile = null;
+
+function nextTurn() {
+    activeProjectile = null;
+    if (p1.hp <= 0 || p2.hp <= 0) { gameActive = false; return; }
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+}
+
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
+}
+
+canvas.addEventListener('mousedown', (e) => { if(gameActive && !activeProjectile) { isDragging = true; mousePos = getMousePos(e); } });
+window.addEventListener('mousemove', (e) => { if (isDragging) mousePos = getMousePos(e); });
+window.addEventListener('mouseup', handleRelease);
+
+canvas.addEventListener('touchstart', (e) => { if(gameActive && !activeProjectile) { isDragging = true; mousePos = getMousePos(e); e.preventDefault(); } }, {passive: false});
+window.addEventListener('touchmove', (e) => { if (isDragging) { mousePos = getMousePos(e); e.preventDefault(); } }, {passive: false});
+window.addEventListener('touchend', handleRelease);
+
+function handleRelease() {
+    if (!isDragging) return;
+    isDragging = false;
+    let p = currentPlayer === 1 ? p1 : p2;
+    activeProjectile = new Projectile(p.slingshotX, p.slingshotY, (p.slingshotX - mousePos.x) * POWER_MULT, (p.slingshotY - mousePos.y) * POWER_MULT);
+}
+
+function loop() {
+    drawEnvironment(); p1.draw(); p2.draw();
+    if (isDragging) {
+        let activeP = currentPlayer === 1 ? p1 : p2;
+        ctx.strokeStyle = isNight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'; ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(activeP.slingshotX, activeP.slingshotY); ctx.lineTo(mousePos.x, mousePos.y); ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    if (activeProjectile) { activeProjectile.update(); activeProjectile.draw(); }
+    document.getElementById('hp1').style.width = Math.max(0, p1.hp) + '%';
+    document.getElementById('hp2').style.width = Math.max(0, p2.hp) + '%';
+    document.getElementById('ui-p1').className = currentPlayer === 1 ? 'stats active-ui' : 'stats';
+    document.getElementById('ui-p2').className = currentPlayer === 2 ? 'stats active-ui' : 'stats';
+    let msg = document.getElementById('turn-msg');
+    if(!gameActive) msg.innerText = p1.hp <= 0 ? "PLAYER 2 WINS!" : "PLAYER 1 WINS!";
+    else msg.innerText = activeProjectile ? "FIRE!" : `PLAYER ${currentPlayer}'S TURN`;
+    requestAnimationFrame(loop);
+}
+
+document.getElementById('reset-btn').onclick = () => location.reload();
+initEnvironment();
+loop();
+</script>
+</body>
+</html>
