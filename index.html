@@ -19,6 +19,7 @@
             aspect-ratio: 1000 / 600;
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
             background: #000;
+            height: 90%;
         }
         canvas { width: 100%; height: 100%; display: block; }
         #ui {
@@ -40,6 +41,20 @@
             background: rgba(0,0,0,0.6); color: white; padding: 4px 12px;
             border-radius: 20px; font-weight: bold; font-size: 12px;
         }
+        span.company-name {
+            position: absolute;
+            /* top: 55px; */
+            left: 50%;
+            transform: translateX(-50%);
+            /* background: rgba(0, 0, 0, 0.6); */
+            color: white;
+            padding: 4px 12px;
+            /* border-radius: 20px; */
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+
 
         #reset-btn {
             margin-top: 15px; 
@@ -60,6 +75,7 @@
 <body>
 
 <div id="game-container">
+    <span class="company-name">SJC Games</span>
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
     <div id="ui">
         <div class="stats" id="ui-p1"><strong>PLAYER 1</strong><div class="hp-bar-bg"><div id="hp1" class="hp-bar-fill"></div></div></div>
