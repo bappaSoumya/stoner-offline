@@ -70,6 +70,8 @@
 
 <button id="reset-btn">New Match</button>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -86,6 +88,236 @@ let currentPlayer = 1;
 let isDragging = false;
 let mousePos = { x: 0, y: 0 };
 let birds = [], trees = [];
+
+// Three.js scene setup
+let scene, camera, renderer, clock;
+let ground, player1, player2, projectile, treeGroup, birdGroup;
+let explosionParticles = [];
+
+function initThreeJS() {
+    scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(skyColor, 0.002);
+    
+    camera = new THREE.PerspectiveCamera(75, 1000/600, 0.1, 1000);
+    camera.position.set(500, 200, 500);
+    camera.lookAt(500, 200, 0);
+    
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(1000, 600);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(skyColor);
+    
+    document.getElementById('game-container').appendChild(renderer.domElement);
+    
+    clock = new THREE.Clock();
+    
+    createLights();
+    createGround();
+    createEnvironment();
+
+    // Initialize player 3D objects
+    player1 = createPlayer(p1.x, p1.y, p1.color, 1);
+    player2 = createPlayer(p2.x, p2.y, p2.color, 2);
+    scene.add(player1);
+    scene.add(player2);
+}
+
+function createLights() {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(500, 500, 500);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    scene.add(directionalLight);
+}
+
+function createGround() {
+    const groundGeometry = new THREE.PlaneGeometry(1000, 600);
+    const groundMaterial = new THREE.MeshLambertMaterial({ color: isNight ? '#1b5e20' : '#2e7d32' });
+    ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+}
+
+function createEnvironment() {
+    treeGroup = new THREE.Group();
+    for(let i=0; i<6; i++) {
+        const tree = createTree(50 + Math.random() * 900, 35 + Math.random() * 45);
+        treeGroup.add(tree);
+    }
+    scene.add(treeGroup);
+    
+    birdGroup = new THREE.Group();
+    for(let i=0; i<3; i++) {
+        const bird = createBird(Math.random() * 1000, 50 + Math.random() * 150);
+        birdGroup.add(bird);
+    }
+    scene.add(birdGroup);
+}
+
+function createTree(x, size) {
+    const treeGroup = new THREE.Group();
+    
+    const trunkGeometry = new THREE.CylinderGeometry(6, 6, size, 8);
+    const trunkMaterial = new THREE.MeshLambertMaterial({ color: '#4e342e' });
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.position.set(x, size/2, 0);
+    trunk.castShadow = true;
+    treeGroup.add(trunk);
+    
+    const foliageGeometry = new THREE.SphereGeometry(size/1.3, 8, 8);
+    const foliageMaterial = new THREE.MeshLambertMaterial({ color: isNight ? '#1b5e20' : '#2e7d32' });
+    const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+    foliage.position.set(x, size + size/3, 0);
+    foliage.castShadow = true;
+    treeGroup.add(foliage);
+    
+    return treeGroup;
+}
+
+function createBird(x, y) {
+    const birdGroup = new THREE.Group();
+    
+    const bodyGeometry = new THREE.SphereGeometry(5, 6, 6);
+    const bodyMaterial = new THREE.MeshLambertMaterial({ color: isNight ? '#eee' : '#333' });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.set(x, y, 0);
+    birdGroup.add(body);
+    
+    const wingGeometry = new THREE.BoxGeometry(10, 2, 1);
+    const wingMaterial = new THREE.MeshLambertMaterial({ color: isNight ? '#ccc' : '#555' });
+    const wing1 = new THREE.Mesh(wingGeometry, wingMaterial);
+    wing1.position.set(x - 3, y, 0);
+    birdGroup.add(wing1);
+    
+    const wing2 = new THREE.Mesh(wingGeometry, wingMaterial);
+    wing2.position.set(x + 3, y, 0);
+    birdGroup.add(wing2);
+    
+    return birdGroup;
+}
+
+function createPlayer(x, y, color, id) {
+    const playerGroup = new THREE.Group();
+    
+    const bodyGeometry = new THREE.CylinderGeometry(12, 15, 30, 8);
+    const bodyMaterial = new THREE.MeshLambertMaterial({ color: color });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.set(x, y + 15, 0);
+    body.castShadow = true;
+    playerGroup.add(body);
+    
+    const headGeometry = new THREE.SphereGeometry(10, 8, 8);
+    const headMaterial = new THREE.MeshLambertMaterial({ color: isNight ? '#eee' : '#222' });
+    const head = new THREE.Mesh(headGeometry, headMaterial);
+    head.position.set(x, y + 45, 0);
+    head.castShadow = true;
+    playerGroup.add(head);
+    
+    return playerGroup;
+}
+
+function createProjectile() {
+    const geometry = new THREE.SphereGeometry(8, 16, 16);
+    const material = new THREE.MeshLambertMaterial({ color: isNight ? 'yellow' : 'black' });
+    return new THREE.Mesh(geometry, material);
+}
+
+function createExplosion(x, y) {
+    const particles = [];
+    for (let i = 0; i < 20; i++) {
+        const particle = new THREE.Mesh(
+            new THREE.SphereGeometry(2, 6, 6),
+            new THREE.MeshLambertMaterial({ color: isNight ? 'yellow' : 'white' })
+        );
+        particle.position.set(x, y, 0);
+        particle.velocity = new THREE.Vector3(
+            (Math.random() - 0.5) * 20,
+            Math.random() * 10,
+            (Math.random() - 0.5) * 20
+        );
+        particles.push(particle);
+        scene.add(particle);
+    }
+    return particles;
+}
+
+function updateBirds(delta) {
+    birdGroup.children.forEach((bird, index) => {
+        bird.position.x += 0.5 * delta;
+        if (bird.position.x > 1100) bird.position.x = -100;
+        
+        const wings = bird.children;
+        wings[1].rotation.z = Math.sin(Date.now() * 0.005 + index) * 0.5;
+        wings[2].rotation.z = -Math.sin(Date.now() * 0.005 + index) * 0.5;
+    });
+}
+
+function updateProjectiles() {
+    if (projectile) {
+        projectile.position.x += projectile.vx;
+        projectile.position.y += projectile.vy;
+        projectile.position.z += projectile.vz || 0;
+        projectile.vy += GRAVITY * 0.1;
+
+        if (projectile.position.y < 0) {
+            explodeProjectile();
+        }
+
+        if (player1 && player2) {
+            [player1, player2].forEach(p => {
+                const distance = Math.sqrt(
+                    Math.pow(projectile.position.x - p.position.x, 2) +
+                    Math.pow(projectile.position.y - p.position.y, 2) +
+                    Math.pow(projectile.position.z - p.position.z, 2)
+                );
+                if (distance < 35) {
+                    if (p === player1) p1.hp -= 20;
+                    if (p === player2) p2.hp -= 20;
+                    explodeProjectile();
+                }
+            });
+        }
+    }
+}
+
+function explodeProjectile() {
+    explosionParticles = createExplosion(projectile.position.x, projectile.position.y);
+    scene.remove(projectile);
+    projectile = null;
+    setTimeout(nextTurn, 600);
+}
+
+function animateParticles(delta) {
+    explosionParticles.forEach((particle, index) => {
+        particle.position.add(particle.velocity);
+        particle.velocity.y -= 0.5;
+        particle.velocity.multiplyScalar(0.98);
+
+        const scale = particle.scale.x - delta * 2;
+        if (scale > 0) {
+            particle.scale.set(scale, scale, scale);
+        } else {
+            scene.remove(particle);
+            explosionParticles.splice(index, 1);
+        }
+    });
+}
+
+function renderThreeJS() {
+    const delta = clock.getDelta();
+
+    updateBirds(delta);
+    updateProjectiles();
+    animateParticles(delta);
+
+    renderer.render(scene, camera);
+}
 
 function initEnvironment() {
     for(let i=0; i<6; i++) {
@@ -132,7 +364,7 @@ class Player {
     draw() {
         ctx.save();
         if (this.shake > 0) { ctx.translate(Math.random()*6-3, 0); this.shake--; }
-        
+
         // Turn Indicator
         if (currentPlayer === this.id && gameActive && !activeProjectile) {
             let bounce = Math.sin(Date.now()/200) * 8;
@@ -148,7 +380,7 @@ class Player {
 
         // Rounded Head
         ctx.beginPath(); ctx.arc(this.x, this.y - 50, 14, 0, Math.PI * 2); ctx.fill();
-        
+
         // Healthy Rounded Torso
         ctx.beginPath();
         ctx.ellipse(this.x, this.y - 15, 18, 25, 0, 0, Math.PI * 2);
@@ -176,17 +408,26 @@ class Player {
 }
 
 class Projectile {
-    constructor(x, y, vx, vy) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.active = true; }
+    constructor(x, y, vx, vy) { 
+        this.x = x; this.y = y; this.vx = vx; this.vy = vy; 
+        this.active = true; 
+    }
     update() {
         this.vy += GRAVITY; this.x += this.vx; this.y += this.vy;
         if (this.y > GROUND_Y) this.explode();
         [p1, p2].forEach(p => {
-            if (Math.hypot(this.x - p.x, this.y - (p.y-15)) < 35) { p.hp -= 20; p.shake = 20; this.explode(); }
+            if (Math.hypot(this.x - p.x, this.y - (p.y-15)) < 35) { 
+                p.hp -= 20; p.shake = 20; this.explode(); 
+            }
         });
         if (this.x < 0 || this.x > canvas.width) this.explode();
     }
     explode() { this.active = false; setTimeout(nextTurn, 600); }
-    draw() { ctx.fillStyle = isNight ? 'yellow' : 'black'; ctx.beginPath(); ctx.arc(this.x, this.y, 8, 0, Math.PI*2); ctx.fill(); }
+    draw() { 
+        ctx.fillStyle = isNight ? 'yellow' : 'black'; 
+        ctx.beginPath(); ctx.arc(this.x, this.y, 8, 0, Math.PI*2); 
+        ctx.fill(); 
+    }
 }
 
 let p1 = new Player(160, GROUND_Y - 35, '#007bff', 1);
@@ -218,31 +459,57 @@ function handleRelease() {
     if (!isDragging) return;
     isDragging = false;
     let p = currentPlayer === 1 ? p1 : p2;
+
+    // Create 3D projectile
+    projectile = createProjectile();
+    projectile.position.set(p.slingshotX, p.slingshotY, 0);
+    projectile.vx = (p.slingshotX - mousePos.x) * POWER_MULT;
+    projectile.vy = (p.slingshotY - mousePos.y) * POWER_MULT;
+    projectile.vz = 0;
+    scene.add(projectile);
+
+    // Create 2D projectile for UI
     activeProjectile = new Projectile(p.slingshotX, p.slingshotY, (p.slingshotX - mousePos.x) * POWER_MULT, (p.slingshotY - mousePos.y) * POWER_MULT);
 }
 
 function loop() {
-    drawEnvironment(); p1.draw(); p2.draw();
+    drawEnvironment(); 
+    p1.draw(); 
+    p2.draw();
+
     if (isDragging) {
         let activeP = currentPlayer === 1 ? p1 : p2;
-        ctx.strokeStyle = isNight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'; ctx.lineWidth = 3;
+        ctx.strokeStyle = isNight ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 3;
         ctx.setLineDash([5, 5]);
-        ctx.beginPath(); ctx.moveTo(activeP.slingshotX, activeP.slingshotY); ctx.lineTo(mousePos.x, mousePos.y); ctx.stroke();
+        ctx.beginPath(); 
+        ctx.moveTo(activeP.slingshotX, activeP.slingshotY); 
+        ctx.lineTo(mousePos.x, mousePos.y); 
+        ctx.stroke();
         ctx.setLineDash([]);
     }
-    if (activeProjectile) { activeProjectile.update(); activeProjectile.draw(); }
+
+    if (activeProjectile) { 
+        activeProjectile.update(); 
+        activeProjectile.draw(); 
+    }
+
     document.getElementById('hp1').style.width = Math.max(0, p1.hp) + '%';
     document.getElementById('hp2').style.width = Math.max(0, p2.hp) + '%';
     document.getElementById('ui-p1').className = currentPlayer === 1 ? 'stats active-ui' : 'stats';
     document.getElementById('ui-p2').className = currentPlayer === 2 ? 'stats active-ui' : 'stats';
+
     let msg = document.getElementById('turn-msg');
     if(!gameActive) msg.innerText = p1.hp <= 0 ? "PLAYER 2 WINS!" : "PLAYER 1 WINS!";
     else msg.innerText = activeProjectile ? "FIRE!" : `PLAYER ${currentPlayer}'S TURN`;
+
+    renderThreeJS();
     requestAnimationFrame(loop);
 }
 
 document.getElementById('reset-btn').onclick = () => location.reload();
 initEnvironment();
+initThreeJS();
 loop();
 </script>
 </body>
