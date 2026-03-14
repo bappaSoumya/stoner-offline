@@ -318,8 +318,108 @@ canvas {
     #stone-selector {
         bottom: 60px;
     }
+
+    /* Mobile game mode selector */
+    #mode-selector {
+        order: 2;
+        width: 90%;
+        margin: 5px 0;
+    }
+
+    #multiplayer-controls {
+        display: none;
+    }
 }
 
+/* Game Mode Selector */
+#mode-selector {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#mode-selector label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#mode-selector select {
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Multiplayer Controls */
+#multiplayer-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 200px;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+#multiplayer-controls.collapsed {
+    max-height: 40px;
+    padding: 8px 8px 4px 8px;
+}
+
+#multiplayer-controls.collapsed .player-controls {
+    display: none;
+}
+
+#multiplayer-controls .player-controls {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#multiplayer-controls .player-controls:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#multiplayer-controls .player-controls p {
+    margin: 0;
+    font-size: 12px;
+    color: #ccc;
+    opacity: 0.7;
+}
+
+.player-controls {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.player-controls strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.player-controls p {
+    margin: 0;
+    font-size: 12px;
+    color: #ccc;
+}
 @media (max-width: 400px) {
     .stats {
         padding: 4px 8px;

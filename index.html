@@ -19,7 +19,26 @@
         <!-- Stone Selector -->
         <div id="stone-selector"></div>
 
+        <!-- Game Mode Selector -->
+        <div id="mode-selector">
+            <label for="gameMode">Game Mode:</label>
+            <select id="gameMode">
+                <option value="single">Single Player vs AI</option>
+                <option value="multi" selected>Multiplayer (2 Players)</option>
+            </select>
+        </div>
 
+        <!-- Multiplayer Controls -->
+        <div id="multiplayer-controls">
+            <div class="player-controls">
+                <strong>Player 1 (Left)</strong>
+                <p>Click and drag to aim, release to shoot</p>
+            </div>
+            <div class="player-controls">
+                <strong>Player 2 (Right)</strong>
+                <p>Click and drag to aim, release to shoot</p>
+            </div>
+        </div>
 
         <!-- Shop Overlay -->
         <div id="shop-overlay">
@@ -62,15 +81,40 @@
         </div>
     </div>
 
+<script src="constants.js"></script>
+<script src="maps.js"></script>
+<script src="particle.js"></script>
+<script src="player.js"></script>
+<script src="projectile.js"></script>
+<script src="ui.js"></script>
+<script src="ai.js"></script>
+<script src="game.js"></script>
 
+<script>
+// Accordion functionality for multiplayer controls
+document.addEventListener('DOMContentLoaded', function() {
+    const multiplayerControls = document.getElementById('multiplayer-controls');
+    if (multiplayerControls) {
+        // Add click event to toggle accordion
+        multiplayerControls.addEventListener('click', function() {
+            multiplayerControls.classList.toggle('collapsed');
+        });
+        
+        // Auto-collapse when switching to single player mode
+        const gameModeSelect = document.getElementById('gameMode');
+        if (gameModeSelect) {
+            gameModeSelect.addEventListener('change', function() {
+                if (this.value === 'single') {
+                    multiplayerControls.classList.add('collapsed');
+                } else {
+                    multiplayerControls.classList.remove('collapsed');
+                }
+            });
+        }
+    }
+});
+</script>
 
-    <script src="constants.js"></script>
-    <script src="maps.js"></script>
-    <script src="particle.js"></script>
-    <script src="player.js"></script>
-    <script src="projectile.js"></script>
-    <script src="ui.js"></script>
-    <script src="game.js"></script>
 </body>
 
 </html>
