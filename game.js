@@ -10,6 +10,7 @@ let birds = [], trees = [];
 let particles = [];
 let activeProjectile = null;
 let subProjectiles = [];
+let nextTurnQueued = false;
 
 const isNight = Math.random() > 0.5;
 const skyColor = isNight ? '#1a237e' : '#87CEEB';
@@ -76,7 +77,7 @@ function drawGround() {
         ctx.strokeStyle = 'rgba(255,255,255,0.3)';
         ctx.lineWidth = 1;
         for (let i = 0; i < 5; i++) {
-            let wx = riverCenter - 60 + Math.sin(Date.now()/800 + i) * 40;
+            let wx = riverCenter - 60 + Math.sin(Date.now() / 800 + i) * 40;
             let wy = BASE_GROUND + 10 + i * 3;
             ctx.beginPath();
             ctx.moveTo(wx - 10, wy);
@@ -219,13 +220,12 @@ function updateUI() {
     document.getElementById('hp1-txt').textContent = Math.max(0, Math.round(p1.hp));
     document.getElementById('hp2-txt').textContent = Math.max(0, Math.round(p2.hp));
 
-    document.getElementById('pts1').style.width = Math.min(100, (p1.points / MAX_PTS) * 100) + '%';
-    document.getElementById('pts2').style.width = Math.min(100, (p2.points / MAX_PTS) * 100) + '%';
-    console.log(p1);
-    console.log(p2);
-    
-    document.getElementById('pts1-txt').textContent = p1.points;
-    document.getElementById('pts2-txt').textContent = p2.points;
+    const p1pts = Number.isFinite(p1.points) ? p1.points : 0;
+    const p2pts = Number.isFinite(p2.points) ? p2.points : 0;
+    document.getElementById('pts1').style.width = Math.min(100, (p1pts / MAX_PTS) * 100) + '%';
+    document.getElementById('pts2').style.width = Math.min(100, (p2pts / MAX_PTS) * 100) + '%';
+    document.getElementById('pts1-txt').textContent = p1pts;
+    document.getElementById('pts2-txt').textContent = p2pts;
 
     document.getElementById('ui-p1').className = currentPlayer === 1 ? 'stats active-ui' : 'stats';
     document.getElementById('ui-p2').className = currentPlayer === 2 ? 'stats active-ui' : 'stats';
@@ -282,8 +282,11 @@ function loop() {
         if (sp.active) { sp.update(); sp.draw(); }
         else { subProjectiles.splice(i, 1); }
     }
-    if (activeProjectile && !activeProjectile.active && subProjectiles.length === 0 && !gameActive === false) {
-        // handled in explode
+
+    // Advance turn once all projectiles have finished
+    if (nextTurnQueued && (!activeProjectile || !activeProjectile.active) && subProjectiles.length === 0 && gameActive) {
+        nextTurnQueued = false;
+        nextTurn();
     }
 
     // Particles

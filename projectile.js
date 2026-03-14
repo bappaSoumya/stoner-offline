@@ -44,7 +44,12 @@ class Projectile {
                 if (p.id !== this.ownerId) {
                     attacker.points += dmg;
                     if (this.bought) {
+                        // Bought stones deduct points from the hit player
                         p.points = Math.max(0, p.points - this.st.cost);
+                    }
+                    // Multi-stone particle hit tracking
+                    if (this.bought && this.multiParent) {
+                        p.multiHits = (p.multiHits || 0) + 1;
                     }
                 }
                 spawnHitParticles(this.x, this.y, this.st.color, 12);
@@ -68,9 +73,8 @@ class Projectile {
                 subProjectiles.push(sp);
             }
         }
-        if (subProjectiles.length === 0) {
-            setTimeout(nextTurn, 500);
-        }
+        // Queue next turn; actual switch happens once all projectiles are done
+        nextTurnQueued = true;
     }
     draw() {
         if (!this.active) return;

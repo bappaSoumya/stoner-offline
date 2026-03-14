@@ -15,6 +15,7 @@ class Player {
         // Stone inventory: unlimited rock, others start at 0
         this.stones = { rock: Infinity, ice: 0, fire: 0, thunder: 0, multi: 0 };
         this.selectedStone = 'rock';
+        this.multiHits = 0; // for tracking multi-stone hit counts per turn
         this.effects = { slow: 0, burn: 0, stun: 0 }; // for stone effects
     }
 
