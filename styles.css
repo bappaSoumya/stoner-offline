@@ -1,28 +1,38 @@
 /* Keep your Global Setup and Container as they are */
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0; padding: 0; 
-    overflow: hidden; 
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     font-family: 'Segoe UI', sans-serif;
     background-color: #111;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: 100vh; width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
 }
 
-#game-container { 
-    position: relative; 
+#game-container {
+    position: relative;
     width: min(100vw, 1000px);
-    max-height: 70vh; 
+    max-height: 70vh;
     aspect-ratio: 1000 / 600;
     background: #000;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     /* Added overflow: hidden to keep absolute elements inside the 'TV' screen */
-    overflow: hidden; 
+    overflow: hidden;
 }
 
-canvas { width: 100%; height: 100%; display: block; }
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
 
 /* --- FIX FOR MAP NAME --- */
 #map-name {
@@ -35,20 +45,24 @@ canvas { width: 100%; height: 100%; display: block; }
     border-radius: 6px;
     font-size: 12px;
     font-weight: bold;
-    pointer-events: none; /* Let clicks pass through to game */
+    pointer-events: none;
+    /* Let clicks pass through to game */
     z-index: 5;
 }
 
 /* --- FIX FOR SHOP OVERLAY --- */
 #shop-overlay {
-    display: none; /* JS toggles to flex */
-    position: absolute; /* Relative to game-container */
+    display: none;
+    /* JS toggles to flex */
+    position: absolute;
+    /* Relative to game-container */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.85);
-    z-index: 200; /* Higher than EVERYTHING else */
+    z-index: 200;
+    /* Higher than EVERYTHING else */
     justify-content: center;
     align-items: center;
     padding: 10px;
@@ -61,18 +75,19 @@ canvas { width: 100%; height: 100%; display: block; }
     width: 95%;
     max-width: 340px;
     /* Limit height so the close button is always visible */
-    max-height: 90%; 
+    max-height: 90%;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
 /* Make the items list scrollable if there are too many */
 #shop-items {
     flex: 1;
-    overflow-y: auto; 
+    overflow-y: auto;
     margin: 10px 0;
-    padding-right: 5px; /* Space for scrollbar */
+    padding-right: 5px;
+    /* Space for scrollbar */
 }
 
 /* Ensure the close button is at the very bottom of the panel */
@@ -86,16 +101,20 @@ canvas { width: 100%; height: 100%; display: block; }
     cursor: pointer;
     font-weight: bold;
     font-size: 14px;
-    margin-top: auto; /* Pushes to bottom of flex panel */
+    margin-top: auto;
+    /* Pushes to bottom of flex panel */
 }
 
-#shop-pts { color: #f39c12; font-weight: bold; }
+#shop-pts {
+    color: #f39c12;
+    font-weight: bold;
+}
 
 /* --- UI BELOW THE GAME --- */
 #ui {
     width: min(100vw, 1000px);
-    display: flex; 
-    justify-content: space-between; 
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 10px;
     background: #222;
@@ -104,18 +123,37 @@ canvas { width: 100%; height: 100%; display: block; }
 
 .stats {
     background: rgba(255, 255, 255, 0.92);
-    padding: 8px; 
+    padding: 8px;
     border-radius: 8px;
-    text-align: center; 
+    text-align: center;
     flex: 1;
     max-width: 200px;
     border: 2px solid #555;
     font-size: 11px;
 }
 
-.bar-bg { width: 100%; height: 7px; background: #ddd; border-radius: 4px; margin: 2px 0; overflow: hidden; }
-.hp-bar-fill { height: 100%; background: #ff4444; width: 100%; transition: width 0.3s; }
-.pts-bar-fill { height: 100%; background: #ffc107; width: 0%; transition: width 0.3s; }
+.bar-bg {
+    width: 100%;
+    height: 7px;
+    background: #ddd;
+    border-radius: 4px;
+    margin: 2px 0;
+    overflow: hidden;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    background: #ff4444;
+    width: 100%;
+    transition: width 0.3s;
+}
+
+.pts-bar-fill {
+    height: 100%;
+    background: #ffc107;
+    width: 0%;
+    transition: width 0.3s;
+}
 
 #shop-trigger {
     margin: 0 10px;
@@ -129,26 +167,33 @@ canvas { width: 100%; height: 100%; display: block; }
 }
 
 #turn-msg {
-    position: absolute; 
-    top: 15px; 
-    left: 50%; 
+    position: absolute;
+    top: 15px;
+    left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.8); color: white;
-    padding: 5px 15px; border-radius: 20px;
-    font-size: 14px; font-weight: bold;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
     z-index: 10;
 }
 
 #reset-btn {
     position: absolute;
-    top: 50%; left: 50%;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
     z-index: 20;
     padding: 12px 24px;
     background: #4CAF50;
-    color: white; border: none; border-radius: 50px;
-    cursor: pointer; font-weight: bold;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 /* This ensures that when your JS adds the "open" class, it overrides display: none */
@@ -161,7 +206,8 @@ canvas { width: 100%; height: 100%; display: block; }
     margin: 0 0 15px 0;
     font-size: 18px;
     display: flex;
-    justify-content: space-between; /* Pushes Title to left, Pts to right */
+    justify-content: space-between;
+    /* Pushes Title to left, Pts to right */
     align-items: center;
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
@@ -172,13 +218,15 @@ canvas { width: 100%; height: 100%; display: block; }
 #shop-items {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Space between items */
+    gap: 10px;
+    /* Space between items */
     margin-bottom: 15px;
 }
 
 .shop-row {
     display: flex;
-    justify-content: space-between; /* Name on left, Button on right */
+    justify-content: space-between;
+    /* Name on left, Button on right */
     align-items: center;
     padding: 5px 0;
 }
@@ -186,7 +234,8 @@ canvas { width: 100%; height: 100%; display: block; }
 .shop-item-info {
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between icon and text */
+    gap: 8px;
+    /* Space between icon and text */
     font-weight: 500;
 }
 
@@ -201,30 +250,98 @@ canvas { width: 100%; height: 100%; display: block; }
     min-width: 70px;
 }
 
+#stone-selector {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+}
+
+.stone-sel-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+}
+
+.stone-sel-btn.active {
+    border-color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    transform: scale(1.15);
+}
+
+.stone-sel-btn .stone-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #333;
+    color: #fff;
+    font-size: 8px;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Mobile Specific Fixes */
 @media (max-width: 600px) {
-    #game-container { max-height: 55vh; }
-    #ui { flex-wrap: wrap; justify-content: center; gap: 8px; }
-    .stats { min-width: 130px; font-size: 10px; }
-    #shop-trigger { order: 3; width: 90%; margin: 5px 0; }
+    #game-container {
+        max-height: 55vh;
+    }
+
+    #ui {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .stats {
+        min-width: 130px;
+        font-size: 10px;
+    }
+
+    #shop-trigger {
+        order: 3;
+        width: 90%;
+        margin: 5px 0;
+    }
+
+    #stone-selector {
+        bottom: 60px;
+    }
 }
+
 @media (max-width: 400px) {
     .stats {
         padding: 4px 8px;
         min-width: 130px;
     }
-    
+
     .stats strong {
         font-size: 10px;
     }
 
     .bar-bg {
-        height: 5px; /* Thinner bars on mobile */
+        height: 5px;
+        /* Thinner bars on mobile */
     }
 
     #shop-trigger {
         padding: 8px;
         font-size: 13px;
         margin-top: 5px;
+    }
+
+    #stone-selector {
+        bottom: 60px;
     }
 }
