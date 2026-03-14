@@ -10,6 +10,19 @@
 
 <body>
 
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <h1>🎯 STONER OFFLINE</h1>
+            <h2>Healthy Edition</h2>
+            <div class="splash-buttons">
+                <button id="new-game-btn" class="splash-btn">🎮 New Game</button>
+                <button id="settings-btn" class="splash-btn">⚙️ Settings</button>
+                <button id="stats-btn" class="splash-btn">📊 Statistics</button>
+            </div>
+        </div>
+    </div>
+
     <div id="game-container">
         <canvas id="gameCanvas" width="1000" height="600"></canvas>
         <button id="reset-btn">New Match</button>
@@ -91,8 +104,37 @@
 <script src="game.js"></script>
 
 <script>
-// Accordion functionality for multiplayer controls
+// Background music setup
+const backgroundMusic = new Audio();
+backgroundMusic.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // Copyright-free music
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.3; // Lower volume for background music
+
+// Splash screen functionality
 document.addEventListener('DOMContentLoaded', function() {
+    const splashScreen = document.getElementById('splash-screen');
+    const newGameBtn = document.getElementById('new-game-btn');
+    const settingsBtn = document.getElementById('settings-btn');
+    const statsBtn = document.getElementById('stats-btn');
+    
+    // New Game button - start the game
+    newGameBtn.addEventListener('click', function() {
+        splashScreen.style.display = 'none';
+        // Start background music when game starts
+        backgroundMusic.play().catch(e => console.log('Music autoplay prevented:', e));
+    });
+    
+    // Settings button - non-functional for now
+    settingsBtn.addEventListener('click', function() {
+        alert('Settings coming soon!');
+    });
+    
+    // Statistics button - non-functional for now
+    statsBtn.addEventListener('click', function() {
+        alert('Statistics coming soon!');
+    });
+    
+    // Accordion functionality for multiplayer controls
     const multiplayerControls = document.getElementById('multiplayer-controls');
     if (multiplayerControls) {
         // Add click event to toggle accordion

@@ -41,14 +41,20 @@ class AI {
             this.player.selectedStone = 'rock';
         }
 
-        // Calculate accurate aim and power
+        // Calculate aim angle between 15-25 degrees
         const dx = this.target.x - this.player.x;
         const dy = this.target.y - this.player.y;
-        this.aimAngle = Math.atan2(dy, dx);
+        
+        // Calculate base angle to target
+        let baseAngle = Math.atan2(dy, dx);
+        
+        // Add random angle between 15-25 degrees (converted to radians)
+        const randomAngle = (15 + Math.random() * 10) * (Math.PI / 180);
+        this.aimAngle = baseAngle + randomAngle;
 
-        // Set consistent power for accuracy
+        // Set power to 90-100% (high power for better accuracy)
         const distance = Math.hypot(dx, dy);
-        this.shotPower = Math.min(distance * 0.05, 0.8);
+        this.shotPower = Math.min(distance * 0.08, 1.0) * (0.5 + Math.random() * 0.2);
     }
 
     update() {

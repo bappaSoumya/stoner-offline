@@ -165,6 +165,15 @@ function initializePlayers() {
     // Always create player objects so they render and participate in collisions
     p2 = new Player(840, p2GroundY, '#c62828', 2);
 
+    // Reset HP and points for both players
+    p1.hp = MAX_HP;
+    p1.points = 0;
+    p1.multiHits = 0;
+    
+    p2.hp = MAX_HP;
+    p2.points = 0;
+    p2.multiHits = 0;
+
     if (gameMode === 'single') {
         // Single player: randomly decide who starts
         currentPlayer = Math.random() < 0.5 ? 1 : 2;
@@ -172,6 +181,28 @@ function initializePlayers() {
         currentPlayer = 1; // Multiplayer starts with player 1
     }
     updateUI(); // Update UI to reflect starting player
+}
+
+// Reset game function
+function resetGame() {
+    // Reset game state
+    gameActive = true;
+    currentPlayer = 1;
+    isDragging = false;
+    mousePos = { x: 0, y: 0 };
+    birds = []; trees = [];
+    particles = [];
+    activeProjectile = null;
+    subProjectiles = [];
+    nextTurnQueued = false;
+
+    // Re-initialize players based on mode
+    initializePlayers();
+
+    // Reset UI
+    updateUI();
+    updateStoneSelector();
+    initEnvironment();
 }
 
 initializePlayers();
@@ -371,6 +402,7 @@ function loop() {
     updateUI();
     requestAnimationFrame(loop);
 }
+
 
 // ─── INIT ───
 document.getElementById('reset-btn').onclick = () => {
