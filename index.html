@@ -10,14 +10,14 @@
 
 <div id="game-container">
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <button id="reset-btn">New Match</button>
     <div id="turn-msg">READY?</div>
     <div id="map-name"></div>
 
     <!-- Stone Selector -->
     <div id="stone-selector"></div>
 
-    <!-- Shop Button -->
-    <button id="shop-trigger">🛒 SHOP</button>
+    
 
     <!-- Shop Overlay -->
     <div id="shop-overlay">
@@ -37,6 +37,8 @@
         <div class="bar-label"><span>PTS</span><span id="pts1-txt">0</span></div>
         <div class="bar-bg"><div id="pts1" class="pts-bar-fill"></div></div>
     </div>
+    <!-- Shop Button -->
+    <button id="shop-trigger">🛒 SHOP</button>
     <div class="stats" id="ui-p2">
         <strong>PLAYER 2</strong>
         <div class="bar-label"><span>HP</span><span id="hp2-txt">100</span></div>
@@ -46,7 +48,7 @@
     </div>
 </div>
 
-<button id="reset-btn">New Match</button>
+
 
 <script src="constants.js"></script>
 <script src="maps.js"></script>

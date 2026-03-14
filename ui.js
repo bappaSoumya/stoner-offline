@@ -15,7 +15,7 @@ function updateStoneSelector() {
         container.style.transform = 'none';
     }
     // Smaller size
-    let size = Math.min(10, canvas.width / 100); // adjust
+    let size = Math.min(15, canvas.width / 65); // adjust
     container.innerHTML = '';
     Object.keys(STONE_TYPES).forEach(key => {
         let st = STONE_TYPES[key];
