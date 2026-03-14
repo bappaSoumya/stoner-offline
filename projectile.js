@@ -30,7 +30,9 @@ class Projectile {
             return;
         }
         // Player hit
-        [p1, p2].forEach(p => {
+        let targets = [p1];
+        if (p2) targets.push(p2);
+        targets.forEach(p => {
             if (Math.hypot(this.x - p.x, this.y - (p.y - 15)) < 32) {
                 let dmg = this.st.dmg;
                 p.hp = Math.max(0, p.hp - dmg);

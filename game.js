@@ -157,23 +157,24 @@ function drawEnvironment() {
 let p1GroundY = getGroundY(160);
 let p2GroundY = getGroundY(840);
 let p1 = new Player(160, p1GroundY, '#1565c0', 1);
-let p2 = null; // Will be created only in multiplayer mode
-let virtualOpponent = null; // Virtual opponent for single-player mode
+let p2 = null; // Will be created based on mode
 
-// Initialize AI
-initAI();
-
-// Create virtual opponent for single-player mode
-if (document.getElementById('gameMode').value === 'single') {
-    virtualOpponent = {
-        x: 840,
-        y: p2GroundY,
-        id: 2
-    };
-} else {
-    // Multiplayer mode - create real p2 player
+// Initialize based on game mode
+function initializePlayers() {
+    const gameMode = document.getElementById('gameMode').value;
+    // Always create player objects so they render and participate in collisions
     p2 = new Player(840, p2GroundY, '#c62828', 2);
+
+    if (gameMode === 'single') {
+        // Single player: randomly decide who starts
+        currentPlayer = Math.random() < 0.5 ? 1 : 2;
+    } else {
+        currentPlayer = 1; // Multiplayer starts with player 1
+    }
+    updateUI(); // Update UI to reflect starting player
 }
+
+initializePlayers();
 
 // Initialize AI
 initAI();
@@ -205,36 +206,23 @@ function nextTurn() {
         }
         p2.multiHits = 0;
     }
-    
+
     updateUI();
-    
+
     // Check win conditions
     let gameOver = false;
-    if (p2) {
-        // Multiplayer mode - check both players
-        if (p1.hp <= 0 || p2.hp <= 0) { 
-            gameActive = false; 
-            gameOver = true;
-        }
-    } else {
-        // Single-player mode - check if player lost
-        if (p1.hp <= 0) { 
-            gameActive = false; 
-            gameOver = true;
-        }
+    if (p1.hp <= 0 || (p2 && p2.hp <= 0)) {
+        gameActive = false;
+        gameOver = true;
     }
-    
+
     if (gameOver) return;
-    
-    // Switch player
+
+    // Switch player (works for both single-player and multiplayer)
     if (p2) {
-        // Multiplayer mode - switch between p1 and p2
         currentPlayer = currentPlayer === 1 ? 2 : 1;
-    } else {
-        // Single-player mode - human is always player 1, AI is player 2
-        currentPlayer = 1; // Always human's turn after AI
     }
-    
+
     updateStoneSelector();
 }
 
@@ -286,47 +274,26 @@ function handleRelease() {
 // ─── UI UPDATE ───
 function updateUI() {
     document.getElementById('hp1').style.width = Math.max(0, p1.hp) + '%';
-    if (p2) {
-        document.getElementById('hp2').style.width = Math.max(0, p2.hp) + '%';
-    } else {
-        document.getElementById('hp2').style.width = '100%';
-    }
+    const p2Hp = p2 ? p2.hp : 100;
+    document.getElementById('hp2').style.width = Math.max(0, p2Hp) + '%';
     document.getElementById('hp1-txt').textContent = Math.max(0, Math.round(p1.hp));
-    if (p2) {
-        document.getElementById('hp2-txt').textContent = Math.max(0, Math.round(p2.hp));
-    } else {
-        document.getElementById('hp2-txt').textContent = '100';
-    }
+    document.getElementById('hp2-txt').textContent = Math.max(0, Math.round(p2Hp));
 
     const p1pts = Number.isFinite(p1.points) ? p1.points : 0;
-    const p2pts = Number.isFinite(p2.points) ? p2.points : 0;
+    const p2pts = Number.isFinite(p2 ? p2.points : 0) ? (p2 ? p2.points : 0) : 0;
     document.getElementById('pts1').style.width = Math.min(100, (p1pts / MAX_PTS) * 100) + '%';
-    if (p2) {
-        document.getElementById('pts2').style.width = Math.min(100, (p2pts / MAX_PTS) * 100) + '%';
-    } else {
-        document.getElementById('pts2').style.width = '0%';
-    }
+    document.getElementById('pts2').style.width = Math.min(100, (p2pts / MAX_PTS) * 100) + '%';
     document.getElementById('pts1-txt').textContent = p1pts;
-    if (p2) {
-        document.getElementById('pts2-txt').textContent = p2pts;
-    } else {
-        document.getElementById('pts2-txt').textContent = '0';
-    }
+    document.getElementById('pts2-txt').textContent = p2pts;
 
     document.getElementById('ui-p1').className = currentPlayer === 1 ? 'stats active-ui' : 'stats';
-    if (p2) {
-        document.getElementById('ui-p2').className = currentPlayer === 2 ? 'stats active-ui' : 'stats';
-    } else {
-        document.getElementById('ui-p2').className = 'stats';
-    }
+    document.getElementById('ui-p2').className = currentPlayer === 2 ? 'stats active-ui' : 'stats';
 
     let msg = document.getElementById('turn-msg');
     if (!gameActive) {
-        if (p2) {
-            msg.innerText = p1.hp <= 0 ? "🏆 PLAYER 2 WINS!" : "🏆 PLAYER 1 WINS!";
-        } else {
-            msg.innerText = p1.hp <= 0 ? "😢 YOU LOST!" : "🎉 YOU WON!";
-        }
+        const p1Lost = p1.hp <= 0;
+        const p2Lost = p2 && p2.hp <= 0;
+        msg.innerText = p1Lost ? "🏆 PLAYER 2 WINS!" : p2Lost ? "🏆 PLAYER 1 WINS!" : "🏆 DRAW!";
         document.getElementById('stone-selector').style.display = 'none';
     } else {
         msg.innerText = activeProjectile ? "💥 FIRE!" : `🎯 PLAYER ${currentPlayer}'S TURN`;
@@ -392,15 +359,6 @@ function loop() {
     if (nextTurnQueued && (!activeProjectile || !activeProjectile.active) && subProjectiles.length === 0 && gameActive) {
         nextTurnQueued = false;
         nextTurn();
-        
-        // In single-player mode, automatically trigger AI turn after human turn
-        if (document.getElementById('gameMode').value === 'single' && gameActive) {
-            setTimeout(() => {
-                if (aiPlayer2 && gameActive) {
-                    aiPlayer2.think();
-                }
-            }, 1000); // 1 second delay before AI turn
-        }
     }
     
     // Particles
@@ -422,16 +380,3 @@ document.getElementById('reset-btn').onclick = () => {
 initEnvironment();
 updateStoneSelector();
 loop();
-
-// Fix AI targeting in single-player mode
-if (document.getElementById('gameMode').value === 'single') {
-    // Override AI target to point to human player
-    const originalAIThink = AI.prototype.think;
-    AI.prototype.think = function() {
-        if (this.player.id === 2) {
-            // In single-player mode, player 2 (AI) should target player 1
-            this.target = p1;
-        }
-        originalAIThink.call(this);
-    };
-}

@@ -2,7 +2,7 @@
 class AI {
     constructor(player) {
         this.player = player;
-        this.target = player.id === 1 ? p1 : p2; // Fixed targeting logic
+        this.target = player.id === 1 ? p2 : p1; // AI targets the opponent
         this.isThinking = false;
         this.thinkTimer = 0;
         this.shotPower = 0;
@@ -15,18 +15,40 @@ class AI {
         this.isThinking = true;
         this.thinkTimer = Date.now() + Math.random() * 1000 + 500; // 0.5-1.5s thinking time
 
-        // Calculate aim angle and power
+        // Buy items if possible (prioritize better stones)
+        const multiItem = SHOP_ITEMS.find(item => item.id === 'multi');
+        const thunderItem = SHOP_ITEMS.find(item => item.id === 'thunder');
+        const fireItem = SHOP_ITEMS.find(item => item.id === 'fire');
+        const iceItem = SHOP_ITEMS.find(item => item.id === 'ice');
+
+        if (this.player.points >= multiItem.cost && this.player.stones.multi === 0) {
+            this.player.stones.multi = 1;
+            this.player.points -= multiItem.cost;
+            this.player.selectedStone = 'multi';
+        } else if (this.player.points >= thunderItem.cost && this.player.stones.thunder === 0) {
+            this.player.stones.thunder = 1;
+            this.player.points -= thunderItem.cost;
+            this.player.selectedStone = 'thunder';
+        } else if (this.player.points >= fireItem.cost && this.player.stones.fire === 0) {
+            this.player.stones.fire = 1;
+            this.player.points -= fireItem.cost;
+            this.player.selectedStone = 'fire';
+        } else if (this.player.points >= iceItem.cost && this.player.stones.ice === 0) {
+            this.player.stones.ice = 1;
+            this.player.points -= iceItem.cost;
+            this.player.selectedStone = 'ice';
+        } else {
+            this.player.selectedStone = 'rock';
+        }
+
+        // Calculate accurate aim and power
         const dx = this.target.x - this.player.x;
         const dy = this.target.y - this.player.y;
         this.aimAngle = Math.atan2(dy, dx);
 
-        // Calculate distance for power
+        // Set consistent power for accuracy
         const distance = Math.hypot(dx, dy);
-        this.shotPower = Math.min(distance * 0.05, 0.8); // Scale power based on distance
-
-        // Add some randomness
-        this.aimAngle += (Math.random() - 0.5) * 0.2; // ±0.1 radians
-        this.shotPower *= 0.8 + Math.random() * 0.4; // 0.8-1.2x power
+        this.shotPower = Math.min(distance * 0.05, 0.8);
     }
 
     update() {
@@ -118,7 +140,7 @@ document.getElementById('reset-btn').onclick = function() {
 function resetGame() {
     // Reset game state
     gameActive = true;
-    currentPlayer = 1;
+    // currentPlayer will be set by initializePlayers
     isDragging = false;
     mousePos = { x: 0, y: 0 };
     birds = []; trees = [];
@@ -127,11 +149,8 @@ function resetGame() {
     subProjectiles = [];
     nextTurnQueued = false;
 
-    // Reset players
-    p1GroundY = getGroundY(160);
-    p2GroundY = getGroundY(840);
-    p1 = new Player(160, p1GroundY, '#1565c0', 1);
-    p2 = new Player(840, p2GroundY, '#c62828', 2);
+    // Re-initialize players based on mode
+    initializePlayers();
 
     // Reset UI
     updateUI();

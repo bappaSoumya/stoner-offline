@@ -3,6 +3,13 @@ function updateStoneSelector() {
     let container = document.getElementById('stone-selector');
     let cp = currentPlayer === 1 ? p1 : p2;
     if (!gameActive || activeProjectile) { container.style.display = 'none'; return; }
+    
+    // In single-player mode, only show selector for human player
+    if (document.getElementById('gameMode').value === 'single' && currentPlayer !== 1) {
+        container.style.display = 'none';
+        return;
+    }
+    
     container.style.display = 'flex';
     // Position based on player
     if (currentPlayer === 1) {
@@ -44,6 +51,8 @@ function updateStoneSelector() {
 // ─── SHOP ───
 function openShop() {
     if (!gameActive || activeProjectile) return;
+    // In single-player, only human can shop
+    if (document.getElementById('gameMode').value === 'single' && currentPlayer !== 1) return;
     let cp = currentPlayer === 1 ? p1 : p2;
     document.getElementById('shop-player').textContent = 'P' + cp.id;
     document.getElementById('shop-pts').textContent = cp.points;
