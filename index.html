@@ -1,64 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Stoner Offline - Healthy Edition</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<div id="game-container">
-    <canvas id="gameCanvas" width="1000" height="600"></canvas>
-    <button id="reset-btn">New Match</button>
-    <div id="turn-msg">READY?</div>
-    <div id="map-name"></div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+        <button id="reset-btn">New Match</button>
+        <div id="turn-msg">READY?</div>
+        <div id="map-name"></div>
 
-    <!-- Stone Selector -->
-    <div id="stone-selector"></div>
+        <!-- Stone Selector -->
+        <div id="stone-selector"></div>
 
-    
 
-    <!-- Shop Overlay -->
-    <div id="shop-overlay">
-        <div id="shop-panel">
-            <h3>
-                <span>⚡ SHOP — <span id="shop-player">P1</span></span>
-                <span>(<span id="shop-pts">0</span> pts)</span>
-            </h3>
-            <div id="shop-items"></div>
-            <button id="shop-close-btn">Close</button>
+
+        <!-- Shop Overlay -->
+        <div id="shop-overlay">
+            <div id="shop-panel">
+                <h3>
+                    <span>⚡ SHOP — <span id="shop-player">P1</span></span>
+                    <span>(<span id="shop-pts">0</span> pts)</span>
+                </h3>
+                <div id="shop-items"></div>
+                <button id="shop-close-btn">Close</button>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="ui">
-    <div class="stats" id="ui-p1">
-        <strong>PLAYER 1</strong>
-        <div class="bar-label"><span>HP</span><span id="hp1-txt">100</span></div>
-        <div class="bar-bg"><div id="hp1" class="hp-bar-fill"></div></div>
-        <div class="bar-label"><span>PTS</span><span id="pts1-txt">0</span></div>
-        <div class="bar-bg"><div id="pts1" class="pts-bar-fill"></div></div>
+    <div id="ui">
+        <div class="stats" id="ui-p1">
+            <strong>PLAYER 1</strong>
+            <div class="bar-label"><strong style="margin-right: 50%;">HP</strong><span id="hp1-txt">100</span></div>
+            <div class="bar-bg">
+                <div id="hp1" class="hp-bar-fill"></div>
+            </div>
+            <div class="bar-label"><strong style="margin-right: 50%;">PTS</strong><span id="pts1-txt">0</span></div>
+            <div class="bar-bg">
+                <div id="pts1" class="pts-bar-fill"></div>
+            </div>
+        </div>
+        <!-- Shop Button -->
+        <button id="shop-trigger">🛒 SHOP</button>
+
+        <div class="stats" id="ui-p2">
+            <strong>PLAYER 2</strong>
+            <div class="bar-label"><strong style="margin-right: 50%;">HP</strong><span id="hp2-txt">100</span></div>
+            <div class="bar-bg">
+                <div id="hp2" class="hp-bar-fill"></div>
+            </div>
+            <div class="bar-label"><strong style="margin-right: 50%;">PTS</strong><span id="pts2-txt">0</span></div>
+            <div class="bar-bg">
+                <div id="pts2" class="pts-bar-fill"></div>
+            </div>
+        </div>
     </div>
-    <!-- Shop Button -->
-    <button id="shop-trigger">🛒 SHOP</button>
-    <div class="stats" id="ui-p2">
-        <strong>PLAYER 2</strong>
-        <div class="bar-label"><span>HP</span><span id="hp2-txt">100</span></div>
-        <div class="bar-bg"><div id="hp2" class="hp-bar-fill"></div></div>
-        <div class="bar-label"><span>PTS</span><span id="pts2-txt">0</span></div>
-        <div class="bar-bg"><div id="pts2" class="pts-bar-fill"></div></div>
-    </div>
-</div>
 
 
 
-<script src="constants.js"></script>
-<script src="maps.js"></script>
-<script src="particle.js"></script>
-<script src="player.js"></script>
-<script src="projectile.js"></script>
-<script src="ui.js"></script>
-<script src="game.js"></script>
+    <script src="constants.js"></script>
+    <script src="maps.js"></script>
+    <script src="particle.js"></script>
+    <script src="player.js"></script>
+    <script src="projectile.js"></script>
+    <script src="ui.js"></script>
+    <script src="game.js"></script>
 </body>
+
 </html>

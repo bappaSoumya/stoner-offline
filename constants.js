@@ -1,7 +1,7 @@
 // ─── CONSTANTS ───
 const GRAVITY = 0.22;
 const POWER_MULT = 0.15;
-const MAX_HP = 100;
+const MAX_HP = 200;
 const MAX_PTS = 200; // Points bar max display
 
 // ─── STONE TYPES ───
