@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stoner Offline - Healthy Edition</title>
+    <link rel="stylesheet" href="game.css">
+</head>
+<body>
+    <!-- Game Container -->
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+        
+        <!-- UI Overlay -->
+        <div id="ui">
+            <!-- Player 1 Progress Bar -->
+            <div class="progress-container" id="p1-progress">
+                <div class="progress-bar" id="p1-hp-bar"></div>
+                <div class="pts-bar" id="p1-pts-bar"></div>
+                <div class="stat-label">HP</div>
+                <div class="stat-label pts-label">PTS</div>
+            </div>
+
+            <!-- Player 2 Progress Bar -->
+            <div class="progress-container" id="p2-progress">
+                <div class="progress-bar" id="p2-hp-bar"></div>
+                <div class="pts-bar" id="p2-pts-bar"></div>
+                <div class="stat-label">HP</div>
+                <div class="stat-label pts-label">PTS</div>
+            </div>
+        </div>
+
+        <!-- Control Buttons (moved to top-middle) -->
+        <div id="control-buttons">
+            <button id="refresh-btn" title="Reset Game">🔄</button>
+            <button id="exit-btn" title="Exit to Menu">🚪</button>
+            <button id="mute-btn" title="Toggle Sound">🔊</button>
+        </div>
+
+        <!-- Shop Button (moved to bottom-middle) -->
+        <button id="shop-trigger">🛒</button>
+
+        <!-- Turn Message -->
+        <div id="turn-msg">READY?</div>
+        
+        <!-- Map Name -->
+        <div id="map-name"></div>
+
+        <!-- Stone Selector -->
+        <div id="stone-selector"></div>
+
+        <!-- Game Mode Selector -->
+        <div id="mode-selector">
+            <select id="gameMode">
+                <option value="single">Single Player vs AI</option>
+                <option value="multi" selected>Multiplayer (2 Players)</option>
+            </select>
+        </div>
+
+        <!-- Multiplayer Controls -->
+        <div id="multiplayer-controls" class="collapsed">
+            <div class="player-controls">
+                <strong>Player 1 (Left)</strong>
+                <p>Click and drag to aim, release to shoot</p>
+            </div>
+            <div class="player-controls">
+                <strong>Player 2 (Right)</strong>
+                <p>Click and drag to aim, release to shoot</p>
+            </div>
+        </div>
+
+        <!-- Shop Overlay -->
+        <div id="shop-overlay">
+            <div id="shop-panel">
+                <h3>
+                    <span>⚡ SHOP — <span id="shop-player">P1</span></span>
+                    <span>(<span id="shop-pts">0</span> pts)</span>
+                </h3>
+                <div id="shop-items"></div>
+                <button id="shop-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="constants.js"></script>
+    <script src="maps.js"></script>
+    <script src="particle.js"></script>
+    <script src="player.js"></script>
+    <script src="projectile.js"></script>
+    <script src="ui.js"></script>
+    <script src="ai.js"></script>
+    <script src="game.js"></script>
+    <script src="game-logic.js"></script>
+</body>
+</html>

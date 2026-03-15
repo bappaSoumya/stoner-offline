@@ -1,240 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
-    <title>Stoner Offline - Healthy Edition</title>
+    <title>Stoner Offline - Game Launcher</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
-    <!-- Splash Screen -->
-    <div id="splash-screen">
-        <div class="splash-content">
+    <!-- Game Launcher Splash Screen -->
+    <div id="launcher-screen">
+        <div class="launcher-header">
             <h1>🎯 STONER OFFLINE</h1>
-            <h2>Healthy Edition</h2>
-            <div class="splash-buttons">
-                <button id="new-game-btn" class="splash-btn">🎮 New Game</button>
-                <button id="settings-btn" class="splash-btn">⚙️ Settings</button>
-                <button id="stats-btn" class="splash-btn">📊 Statistics</button>
+            <h2>Game Launcher</h2>
+        </div>
+        
+        <div class="game-grid">
+            <div class="game-card" onclick="launchGame('stoner-offline/game.html')">
+                <div class="game-screenshot">
+                    <div class="screenshot-placeholder">Game Preview</div>
+                </div>
+                <div class="game-info">
+                    <h3>Stoner Offline</h3>
+                    <p>Classic physics-based strategy game</p>
+                    <div class="game-meta">
+                        <span class="tag">Multiplayer</span>
+                        <span class="tag">Single Player</span>
+                        <span class="tag">Arcade</span>
+                    </div>
+                </div>
+                <div class="play-button">▶ Play Game</div>
+            </div>
+            
+            <!-- Future game slots can be added here -->
+            <!--
+            <div class="game-card disabled">
+                <div class="game-screenshot">
+                    <div class="coming-soon">Coming Soon</div>
+                </div>
+                <div class="game-info">
+                    <h3>Game 2</h3>
+                    <p>Another awesome game</p>
+                    <div class="game-meta">
+                        <span class="tag">Action</span>
+                        <span class="tag">Adventure</span>
+                    </div>
+                </div>
+                <div class="play-button disabled">🔒 Locked</div>
+            </div>
+            -->
+        </div>
+        
+        <div class="launcher-footer">
+            <p>Use keyboard controls or touch to play</p>
+            <div class="footer-links">
+                <a href="#" onclick="showAbout()">About</a>
+                <a href="#" onclick="showSettings()">Settings</a>
             </div>
         </div>
     </div>
 
-    <div id="game-container">
-        <canvas id="gameCanvas" width="1000" height="600"></canvas>
-        
-        <!-- UI Overlay -->
-        <div id="ui">
-            <!-- Player 1 Progress Bar -->
-            <div class="progress-container" id="p1-progress">
-                <div class="progress-bar" id="p1-hp-bar"></div>
-                <div class="pts-bar" id="p1-pts-bar"></div>
-                <div class="stat-label">HP</div>
-                <div class="stat-label pts-label">PTS</div>
-            </div>
-
-            <!-- Player 2 Progress Bar -->
-            <div class="progress-container" id="p2-progress">
-                <div class="progress-bar" id="p2-hp-bar"></div>
-                <div class="pts-bar" id="p2-pts-bar"></div>
-                <div class="stat-label">HP</div>
-                <div class="stat-label pts-label">PTS</div>
-            </div>
-        </div>
-
-        <!-- Control Buttons (moved to top-middle) -->
-        <div id="control-buttons">
-            <button id="refresh-btn" title="Reset Game">🔄</button>
-            <button id="exit-btn" title="Exit to Menu">🚪</button>
-            <button id="mute-btn" title="Toggle Sound">🔊</button>
-        </div>
-
-        <!-- Shop Button (moved to bottom-middle) -->
-        <button id="shop-trigger">🛒</button>
-
-        <!-- Turn Message -->
-        <div id="turn-msg">READY?</div>
-        
-        <!-- Map Name -->
-        <div id="map-name"></div>
-
-        <!-- Stone Selector -->
-        <div id="stone-selector"></div>
-
-        <!-- Game Mode Selector -->
-        <div id="mode-selector">
-            <select id="gameMode">
-                <option value="single">Single Player vs AI</option>
-                <option value="multi" selected>Multiplayer (2 Players)</option>
-            </select>
-        </div>
-
-        <!-- Multiplayer Controls -->
-        <div id="multiplayer-controls" class="collapsed">
-            <div class="player-controls">
-                <strong>Player 1 (Left)</strong>
-                <p>Click and drag to aim, release to shoot</p>
-            </div>
-            <div class="player-controls">
-                <strong>Player 2 (Right)</strong>
-                <p>Click and drag to aim, release to shoot</p>
-            </div>
-        </div>
-
-        <!-- Control Buttons -->
-        <!-- <div id="control-buttons">
-            <button id="refresh-btn" title="Reset Game">🔄</button>
-            <button id="exit-btn" title="Exit to Menu">🚪</button>
-            <button id="mute-btn" title="Toggle Sound">🔊</button>
-        </div> -->
-
-        <!-- Shop Overlay -->
-        <div id="shop-overlay">
-            <div id="shop-panel">
-                <h3>
-                    <span>⚡ SHOP — <span id="shop-player">P1</span></span>
-                    <span>(<span id="shop-pts">0</span> pts)</span>
-                </h3>
-                <div id="shop-items"></div>
-                <button id="shop-close-btn">Close</button>
+    <!-- About Modal -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAbout()">&times;</span>
+            <h2>About Stoner Offline</h2>
+            <p>A modern take on the classic physics-based strategy game. Features smooth animations, multiple game modes, and a comprehensive shop system.</p>
+            <div class="features-list">
+                <h3>Features:</h3>
+                <ul>
+                    <li>Single Player vs AI</li>
+                    <li>Multiplayer (2 Players)</li>
+                    <li>Multiple Maps</li>
+                    <li>Shop System</li>
+                    <li>Responsive Design</li>
+                </ul>
             </div>
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeSettings()">&times;</span>
+            <h2>Settings</h2>
+            <div class="setting-item">
+                <label for="music-toggle">Background Music</label>
+                <input type="checkbox" id="music-toggle" checked>
+            </div>
+            <div class="setting-item">
+                <label for="sound-toggle">Sound Effects</label>
+                <input type="checkbox" id="sound-toggle" checked>
+            </div>
+            <div class="setting-item">
+                <label for="difficulty-select">AI Difficulty</label>
+                <select id="difficulty-select">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-
-<script src="constants.js"></script>
-<script src="maps.js"></script>
-<script src="particle.js"></script>
-<script src="player.js"></script>
-<script src="projectile.js"></script>
-<script src="ui.js"></script>
-<script src="ai.js"></script>
-<script src="game.js"></script>
-
-<script>
-// Background music setup
-const backgroundMusic = new Audio();
-backgroundMusic.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // Copyright-free music
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.3; // Lower volume for background music
-
-// Splash screen functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const splashScreen = document.getElementById('splash-screen');
-    const newGameBtn = document.getElementById('new-game-btn');
-    const settingsBtn = document.getElementById('settings-btn');
-    const statsBtn = document.getElementById('stats-btn');
-    
-    // New Game button - start the game
-    newGameBtn.addEventListener('click', function() {
-        splashScreen.style.display = 'none';
-        // Start background music when game starts
-        backgroundMusic.play().catch(e => console.log('Music autoplay prevented:', e));
-    });
-    
-    // Settings button - non-functional for now
-    settingsBtn.addEventListener('click', function() {
-        alert('Settings coming soon!');
-    });
-    
-    // Statistics button - non-functional for now
-    statsBtn.addEventListener('click', function() {
-        alert('Statistics coming soon!');
-    });
-    
-    // Accordion functionality for multiplayer controls
-    const multiplayerControls = document.getElementById('multiplayer-controls');
-    if (multiplayerControls) {
-        // Add click event to toggle accordion
-        multiplayerControls.addEventListener('click', function() {
-            multiplayerControls.classList.toggle('collapsed');
-        });
-        
-        // Auto-collapse when switching to single player mode
-        const gameModeSelect = document.getElementById('gameMode');
-        if (gameModeSelect) {
-            gameModeSelect.addEventListener('change', function() {
-                if (this.value === 'single') {
-                    multiplayerControls.classList.add('collapsed');
-                } else {
-                    multiplayerControls.classList.remove('collapsed');
-                }
-            });
-        }
-    }
-    
-    // Control buttons functionality
-    const refreshBtn = document.getElementById('refresh-btn');
-    const exitBtn = document.getElementById('exit-btn');
-    const muteBtn = document.getElementById('mute-btn');
-    const modeSelector = document.getElementById('mode-selector');
-    
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
-            // Reset game
-            resetGame();
-        });
-    }
-    
-    if (exitBtn) {
-        exitBtn.addEventListener('click', function() {
-            // Exit to menu
-            splashScreen.style.display = 'flex';
-            // Stop background music
-            backgroundMusic.pause();
-            backgroundMusic.currentTime = 0;
-        });
-    }
-    
-    if (muteBtn) {
-        muteBtn.addEventListener('click', function() {
-            // Toggle sound
-            backgroundMusic.muted = !backgroundMusic.muted;
-            muteBtn.textContent = backgroundMusic.muted ? '🔇' : '🔊';
-        });
-    }
-    
-    // Toggle mode selector drawer on mobile
-    if (modeSelector) {
-        // Toggle drawer when clicking on the mode selector
-        modeSelector.addEventListener('click', function() {
-            if (window.innerWidth <= 600) {
-                this.classList.toggle('active');
-            }
-        });
-        
-        // Close drawer when selecting an option
-        const gameModeSelect = document.getElementById('gameMode');
-        if (gameModeSelect) {
-            gameModeSelect.addEventListener('change', function() {
-                if (window.innerWidth <= 600 && modeSelector) {
-                    modeSelector.classList.remove('active');
-                }
-            });
+    <script>
+        // Game launcher functionality
+        function launchGame(gameUrl) {
+            window.location.href = gameUrl;
         }
         
-        // Close drawer when clicking outside
-        document.addEventListener('click', function(e) {
-            if (window.innerWidth <= 600 && modeSelector && !modeSelector.contains(e.target)) {
-                modeSelector.classList.remove('active');
+        function showAbout() {
+            document.getElementById('about-modal').style.display = 'flex';
+        }
+        
+        function closeAbout() {
+            document.getElementById('about-modal').style.display = 'none';
+        }
+        
+        function showSettings() {
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+        
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const aboutModal = document.getElementById('about-modal');
+            const settingsModal = document.getElementById('settings-modal');
+            
+            if (event.target === aboutModal) {
+                aboutModal.style.display = 'none';
             }
-        });
-    }
-});
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then(reg => console.log('Service Worker registered'))
-      .catch(err => console.log('Service Worker failed:', err));
-  });
-}
-</script>
-
+            if (event.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        }
+        
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
+    </script>
 </body>
-
 </html>
