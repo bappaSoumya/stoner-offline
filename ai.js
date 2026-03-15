@@ -54,7 +54,7 @@ class AI {
 
         // Set power to 90-100% (high power for better accuracy)
         const distance = Math.hypot(dx, dy);
-        this.shotPower = Math.min(distance * 0.08, 1.0) * (0.5 + Math.random() * 0.2);
+        this.shotPower = Math.min(distance * 0.08, 1.0) * (0.5 + Math.random() * 0.3);
     }
 
     update() {
@@ -137,12 +137,7 @@ function handleRelease() {
     updateStoneSelector();
 }
 
-// Override reset button to also reset AI
-document.getElementById('reset-btn').onclick = function() {
-    resetGame();
-    initAI();
-    // location.reload(); // Removed - no longer needed
-};
+// Note: reset-btn was removed from HTML, reset functionality is now handled in game.js
 function resetGame() {
     // Reset game state
     gameActive = true;

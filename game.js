@@ -147,6 +147,8 @@ function drawBirds() {
 }
 
 function drawEnvironment() {
+    console.log('drawEnvironment');
+    
     drawSky();
     drawBirds();
     drawTrees();
@@ -167,12 +169,36 @@ function initializePlayers() {
 
     // Reset HP and points for both players
     p1.hp = MAX_HP;
-    p1.points = 0;
+    p1.points = MAX_PTS;
     p1.multiHits = 0;
+    p1.dead = false;
+    p1.falling = false;
+    p1.deathY = 0;
+    p1.deathVel = 0;
+    p1.jump = 0;
+    p1.jumpVel = 0;
+    p1.happy = 0;
+    p1.reaction = '';
+    p1.reactionTimer = 0;
+    p1.effects = { slow: 0, burn: 0, stun: 0 };
+    p1.stones = { rock: Infinity, ice: 0, fire: 0, thunder: 0, multi: 0 };
+    p1.selectedStone = 'rock';
     
     p2.hp = MAX_HP;
-    p2.points = 0;
+    p2.points = MAX_PTS;
     p2.multiHits = 0;
+    p2.dead = false;
+    p2.falling = false;
+    p2.deathY = 0;
+    p2.deathVel = 0;
+    p2.jump = 0;
+    p2.jumpVel = 0;
+    p2.happy = 0;
+    p2.reaction = '';
+    p2.reactionTimer = 0;
+    p2.effects = { slow: 0, burn: 0, stun: 0 };
+    p2.stones = { rock: Infinity, ice: 0, fire: 0, thunder: 0, multi: 0 };
+    p2.selectedStone = 'rock';
 
     if (gameMode === 'single') {
         // Single player: randomly decide who starts
@@ -304,33 +330,101 @@ function handleRelease() {
 
 // ─── UI UPDATE ───
 function updateUI() {
-    document.getElementById('hp1').style.width = Math.max(0, p1.hp) + '%';
-    const p2Hp = p2 ? p2.hp : 100;
-    document.getElementById('hp2').style.width = Math.max(0, p2Hp) + '%';
-    document.getElementById('hp1-txt').textContent = Math.max(0, Math.round(p1.hp));
-    document.getElementById('hp2-txt').textContent = Math.max(0, Math.round(p2Hp));
-
-    const p1pts = Number.isFinite(p1.points) ? p1.points : 0;
-    const p2pts = Number.isFinite(p2 ? p2.points : 0) ? (p2 ? p2.points : 0) : 0;
-    document.getElementById('pts1').style.width = Math.min(100, (p1pts / MAX_PTS) * 100) + '%';
-    document.getElementById('pts2').style.width = Math.min(100, (p2pts / MAX_PTS) * 100) + '%';
-    document.getElementById('pts1-txt').textContent = p1pts;
-    document.getElementById('pts2-txt').textContent = p2pts;
-
-    document.getElementById('ui-p1').className = currentPlayer === 1 ? 'stats active-ui' : 'stats';
-    document.getElementById('ui-p2').className = currentPlayer === 2 ? 'stats active-ui' : 'stats';
-
+    // Update turn message
     let msg = document.getElementById('turn-msg');
-    if (!gameActive) {
-        const p1Lost = p1.hp <= 0;
-        const p2Lost = p2 && p2.hp <= 0;
-        msg.innerText = p1Lost ? "🏆 PLAYER 2 WINS!" : p2Lost ? "🏆 PLAYER 1 WINS!" : "🏆 DRAW!";
-        document.getElementById('stone-selector').style.display = 'none';
-    } else {
-        msg.innerText = activeProjectile ? "💥 FIRE!" : `🎯 PLAYER ${currentPlayer}'S TURN`;
+    if (msg) {
+        if (!gameActive) {
+            const p1Lost = p1.hp <= 0;
+            const p2Lost = p2 && p2.hp <= 0;
+            msg.innerText = p1Lost ? "🏆 PLAYER 2 WINS!" : p2Lost ? "🏆 PLAYER 1 WINS!" : "🏆 DRAW!";
+            msg.style.display = 'block';
+        } else {
+            msg.innerText = activeProjectile ? "💥 FIRE!" : `🎯 PLAYER ${currentPlayer}'S TURN`;
+            msg.style.display = 'block';
+        }
     }
 
-    document.getElementById('map-name').textContent = '🗺️ ' + currentMap.name;
+    // Update map name
+    let mapName = document.getElementById('map-name');
+    if (mapName) {
+        mapName.textContent = '🗺️ ' + currentMap.name;
+        mapName.style.display = 'block';
+    }
+
+    // Update player progress bars
+    updatePlayerProgressBars();
+
+    // Update shop points display
+    let cp = currentPlayer === 1 ? p1 : p2;
+    let shopPts = document.getElementById('shop-pts');
+    if (shopPts) {
+        shopPts.textContent = cp.points;
+    }
+
+    // Update shop overlay points display
+    let shopPlayerPts = document.getElementById('shop-pts');
+    if (shopPlayerPts) {
+        shopPlayerPts.textContent = cp.points;
+    }
+
+    // Update stone selector visibility
+    let stoneSelector = document.getElementById('stone-selector');
+    if (stoneSelector) {
+        if (!gameActive) {
+            stoneSelector.style.display = 'none';
+        } else {
+            stoneSelector.style.display = 'flex';
+        }
+    }
+
+    // Update shop trigger button visibility
+    let shopTrigger = document.getElementById('shop-trigger');
+    if (shopTrigger) {
+        if (!gameActive || activeProjectile) {
+            shopTrigger.style.display = 'none';
+        } else {
+            // In single-player mode, only show for human player's turn
+            const gameMode = document.getElementById('gameMode').value;
+            if (gameMode === 'single' && currentPlayer !== 1) {
+                shopTrigger.style.display = 'none';
+            } else {
+                shopTrigger.style.display = 'block';
+            }
+        }
+    }
+}
+
+// Update player progress bars
+function updatePlayerProgressBars() {
+    // Player 1 progress bar
+    const p1HpBar = document.getElementById('p1-hp-bar');
+    const p1PtsBar = document.getElementById('p1-pts-bar');
+    if (p1HpBar && p1) {
+        const hpPercent = Math.max(0, (p1.hp / MAX_HP) * 100);
+        p1HpBar.style.width = hpPercent + '%';
+        p1HpBar.style.background = hpPercent > 50 ? 'linear-gradient(90deg, #ff4444, #ff0000)' : 'linear-gradient(90deg, #ff0000, #8b0000)';
+    }
+    
+    if (p1PtsBar && p1) {
+        const ptsPercent = Math.max(0, (p1.points / MAX_PTS) * 100);
+        p1PtsBar.style.width = ptsPercent + '%';
+        p1PtsBar.style.background = ptsPercent > 50 ? 'linear-gradient(90deg, #2196f3, #21cbf3)' : 'linear-gradient(90deg, #2196f3, #21cbf3)';
+    }
+
+    // Player 2 progress bar
+    const p2HpBar = document.getElementById('p2-hp-bar');
+    const p2PtsBar = document.getElementById('p2-pts-bar');
+    if (p2HpBar && p2) {
+        const hpPercent = Math.max(0, (p2.hp / MAX_HP) * 100);
+        p2HpBar.style.width = hpPercent + '%';
+        p2HpBar.style.background = hpPercent > 50 ? 'linear-gradient(90deg, #ff4444, #ff0000)' : 'linear-gradient(90deg, #ff0000, #8b0000)';
+    }
+    
+    if (p2PtsBar && p2) {
+        const ptsPercent = Math.max(0, (p2.points / MAX_PTS) * 100);
+        p2PtsBar.style.width = ptsPercent + '%';
+        p2PtsBar.style.background = ptsPercent > 50 ? 'linear-gradient(90deg, #2196f3, #21cbf3)' : 'linear-gradient(90deg, #2196f3, #21cbf3)';
+    }
 }
 
 // ─── MAIN LOOP ───
@@ -342,8 +436,8 @@ function loop() {
     if (p1) p1.updateEffects();
     if (p2) p2.updateEffects();
     
-    if (p1) p1.draw();
-    if (p2) p2.draw();
+    if (p1 && !p1.dead) p1.draw();
+    if (p2 && !p2.dead) p2.draw();
     
     // AI logic
     if (aiPlayer2 && currentPlayer === 2 && !activeProjectile && gameActive) {
@@ -404,11 +498,120 @@ function loop() {
 }
 
 
-// ─── INIT ───
-document.getElementById('reset-btn').onclick = () => {
-    resetGame();
+// ─── CANVAS BUTTON HANDLING ───
+canvas.addEventListener('mousedown', (e) => {
+    if (gameActive && !activeProjectile) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        
+        // Check if shop button clicked
+        const shopX = canvas.width / 2 - 25;
+        const shopY = canvas.height - 60;
+        
+        if (mouseX >= shopX && mouseX <= shopX + 50 && 
+            mouseY >= shopY && mouseY <= shopY + 50) {
+            // Open shop
+            openShop();
+        }
+        
+        // Check if control buttons clicked
+        const controlX = canvas.width / 2 - 45;
+        const controlY = 60;
+        
+        // Refresh button
+        if (mouseX >= controlX && mouseX <= controlX + 30 && 
+            mouseY >= controlY && mouseY <= controlY + 30) {
+            // Force reset game state and reinitialize
+            gameActive = true;
+            currentPlayer = 1;
+            isDragging = false;
+            mousePos = { x: 0, y: 0 };
+            birds = []; trees = [];
+            particles = [];
+            activeProjectile = null;
+            subProjectiles = [];
+            nextTurnQueued = false;
+            
+            // Re-initialize players based on mode
+            initializePlayers();
+            
+            // Reset UI and environment
+            updateUI();
+            updateStoneSelector();
+            initEnvironment();
+            initAI();
+        }
+        
+        // Back button
+        if (mouseX >= controlX + 40 && mouseX <= controlX + 70 && 
+            mouseY >= controlY && mouseY <= controlY + 30) {
+            // Go back to main menu
+            window.location.href = 'index.html';
+        }
+        
+        // Mute button
+        if (mouseX >= controlX + 80 && mouseX <= controlX + 110 && 
+            mouseY >= controlY && mouseY <= controlY + 30) {
+            // Toggle mute
+            const audio = document.getElementById('game-audio');
+            if (audio) {
+                audio.muted = !audio.muted;
+                // Update button text/icon
+                const btn = document.getElementById('mute-btn');
+                btn.textContent = audio.muted ? '🔇' : '🔊';
+                btn.title = audio.muted ? 'Unmute Sound' : 'Mute Sound';
+            }
+        }
+    }
+});
+
+// ─── SHOP TRIGGER BUTTON HANDLING ───
+document.getElementById('shop-trigger').addEventListener('click', function() {
+    openShop();
+});
+
+// ─── CONTROL BUTTONS HANDLING ───
+document.getElementById('refresh-btn').addEventListener('click', function() {
+    // Force reset game state and reinitialize
+    gameActive = true;
+    currentPlayer = 1;
+    isDragging = false;
+    mousePos = { x: 0, y: 0 };
+    birds = []; trees = [];
+    particles = [];
+    activeProjectile = null;
+    subProjectiles = [];
+    nextTurnQueued = false;
+    
+    // Re-initialize players based on mode
+    initializePlayers();
+    
+    // Reset UI and environment
+    updateUI();
+    updateStoneSelector();
+    initEnvironment();
     initAI();
-};
+});
+
+document.getElementById('exit-btn').addEventListener('click', function() {
+    // Go back to main menu
+    window.location.href = 'index.html';
+});
+
+document.getElementById('mute-btn').addEventListener('click', function() {
+    // Toggle mute
+    const audio = document.getElementById('game-audio');
+    if (audio) {
+        audio.muted = !audio.muted;
+        // Update button text/icon
+        const btn = document.getElementById('mute-btn');
+        btn.textContent = audio.muted ? '🔇' : '🔊';
+        btn.title = audio.muted ? 'Unmute Sound' : 'Mute Sound';
+    }
+});
+
+// ─── INIT ───
 initEnvironment();
 updateStoneSelector();
 loop();

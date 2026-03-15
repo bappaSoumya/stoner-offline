@@ -48,10 +48,31 @@ function updateStoneSelector() {
     });
 }
 
+// ─── UPDATE UI ───
+function updateUI() {
+    // Update progress bars
+    let p1HpPercent = (p1.hp / MAX_HP) * 100;
+    let p2HpPercent = (p2.hp / MAX_HP) * 100;
+    
+    document.getElementById('p1-hp-bar').style.width = p1HpPercent + '%';
+    document.getElementById('p2-hp-bar').style.width = p2HpPercent + '%';
+    
+    // Update PTS progress bars
+    let p1PtsPercent = (p1.points / 100) * 100; // Assuming max points is 100 for full bar
+    let p2PtsPercent = (p2.points / 100) * 100;
+    
+    document.getElementById('p1-pts-bar').style.width = p1PtsPercent + '%';
+    document.getElementById('p2-pts-bar').style.width = p2PtsPercent + '%';
+    
+    // Update shop points display
+    let cp = currentPlayer === 1 ? p1 : p2;
+    document.getElementById('shop-pts').textContent = cp.points;
+}
+
 // ─── SHOP ───
 function openShop() {
     if (!gameActive || activeProjectile) return;
-    // In single-player, only human can shop
+    // In single-player, only human can shop and only on their turn
     if (document.getElementById('gameMode').value === 'single' && currentPlayer !== 1) return;
     let cp = currentPlayer === 1 ? p1 : p2;
     document.getElementById('shop-player').textContent = 'P' + cp.id;
@@ -74,7 +95,7 @@ function openShop() {
         row.querySelector('button').onclick = () => buyItem(item);
         itemsDiv.appendChild(row);
     });
-    document.getElementById('shop-overlay').classList.add('open');
+    document.getElementById('shop-overlay').style.display = 'flex';
 }
 
 function buyItem(item) {
@@ -88,11 +109,12 @@ function buyItem(item) {
         cp.stones[item.stone] = (cp.stones[item.stone] || 0) + 3;
     }
     updateUI();
-    openShop(); // refresh
+    openShop(); // refresh shop after purchase
     updateStoneSelector();
 }
 
-document.getElementById('shop-trigger').onclick = openShop;
+// Note: shop-trigger button was removed from HTML, shop is now accessed via canvas button
+// The shop-close-btn functionality is still needed for the shop modal
 document.getElementById('shop-close-btn').onclick = () => {
-    document.getElementById('shop-overlay').classList.remove('open');
+    document.getElementById('shop-overlay').style.display = 'none';
 };

@@ -37,12 +37,32 @@ class Projectile {
                 let dmg = this.st.dmg;
                 p.hp = Math.max(0, p.hp - dmg);
                 p.shake = 20;
+                
+                // Trigger jump animation and happy reaction for successful hit
+                let attacker = this.ownerId === 1 ? p1 : p2;
+                if (p.id !== this.ownerId) {
+                    attacker.jump = 10; // 10px jump height
+                    attacker.jumpVel = -4; // Initial upward velocity
+                    attacker.happy = 20; // Happy reaction duration
+                    attacker.reaction = 'happy';
+                    attacker.reactionTimer = 60; // 1 second reaction
+                }
+                
                 // Effects
                 if (this.stoneType === 'ice') p.effects.slow = 3; // slow for 3 turns
                 if (this.stoneType === 'fire') p.effects.burn = 3; // burn for 3 turns
                 if (this.stoneType === 'thunder') p.effects.stun = 1; // stun for 1 turn
+                
+                // Trigger reaction for hit player
+                if (p.id !== this.ownerId) {
+                    if (p.hp <= 20) {
+                        p.reaction = 'angry'; // Angry when low HP
+                    } else {
+                        p.reaction = 'sad'; // Sad when hit
+                    }
+                    p.reactionTimer = 45; // 0.75 seconds reaction
+                }
                 // Points
-                let attacker = this.ownerId === 1 ? p1 : p2;
                 if (p.id !== this.ownerId) {
                     attacker.points += dmg;
                     if (this.bought) {
@@ -54,7 +74,18 @@ class Projectile {
                         p.multiHits = (p.multiHits || 0) + 1;
                     }
                 }
-                spawnHitParticles(this.x, this.y, this.st.color, 12);
+                
+                // Stone-specific explosion effects
+                if (this.stoneType === 'fire') {
+                    spawnFireExplosion(this.x, this.y);
+                } else if (this.stoneType === 'ice') {
+                    spawnFrostEffect(this.x, this.y);
+                } else if (this.stoneType === 'thunder') {
+                    spawnThunderStrike(this.x, this.y);
+                } else {
+                    spawnHitParticles(this.x, this.y, this.st.color, 12);
+                }
+                
                 updateUI();
                 this.explode(true);
             }
