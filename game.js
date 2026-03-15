@@ -611,7 +611,26 @@ document.getElementById('mute-btn').addEventListener('click', function() {
     }
 });
 
+// ─── AUDIO CONTROL ───
+function playGameAudio() {
+    const audio = document.getElementById('game-audio');
+    if (audio) {
+        audio.play().catch(e => console.log('Audio play prevented:', e));
+    }
+}
+
+function pauseGameAudio() {
+    const audio = document.getElementById('game-audio');
+    if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+    }
+}
+
 // ─── INIT ───
 initEnvironment();
 updateStoneSelector();
 loop();
+
+// Start game audio when game starts
+playGameAudio();
