@@ -633,4 +633,7 @@ canvas {
     #game-container {
         max-height: 72vh;
     }
+    #stone-selector {
+        top: 25%;
+    }
 }
