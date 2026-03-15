@@ -599,7 +599,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('exit-btn').addEventListener('click', function() {
-        // Go back to main menu
+        // Clean up game state before exiting
+        window.gameActive = false;
+        window.isDragging = false;
+        window.mousePos = { x: 0, y: 0 };
+        window.birds = [];
+        window.trees = [];
+        window.particles = [];
+        window.activeProjectile = null;
+        window.subProjectiles = [];
+        window.nextTurnQueued = false;
+        
+        // Clear canvas
+        if (window.ctx) {
+            window.ctx.clearRect(0, 0, window.canvas.width, window.canvas.height);
+        }
+        
+        // Go back to main menu (no cache busting for offline mode)
         window.location.href = 'index.html';
     });
 

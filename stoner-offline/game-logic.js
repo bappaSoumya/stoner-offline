@@ -90,10 +90,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Service Worker registration (only works on HTTP/HTTPS, not file://)
-if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker failed:', err));
-    });
-}
+// if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+//     window.addEventListener('load', () => {
+//         navigator.serviceWorker.register('./service-worker.js')
+//             .then(reg => console.log('Service Worker registered'))
+//             .catch(err => console.log('Service Worker failed:', err));
+//     });
+// }
